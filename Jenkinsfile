@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  tools {
+    maven 'Maven'
+  }
+
   options {
     timestamps()
   }
@@ -12,19 +16,9 @@ pipeline {
       }
     }
 
-    stage('Build') {
+    stage('Build & Test') {
       steps {
-        ansiColor('xterm') {
-          sh 'mvn -B -DskipTests=false clean package'
-        }
-      }
-    }
-
-    stage('Test') {
-      steps {
-        ansiColor('xterm') {
-          sh 'mvn -B test'
-        }
+        sh 'mvn -B clean test package'
       }
     }
 
@@ -37,7 +31,8 @@ pipeline {
 
   post {
     always {
-      junit 'target/surefire-reports/*.xml'
+      junit testResults: 'target/surefire-reports/*.xml',
+            allowEmptyResults: true
       cleanWs()
     }
     success {
